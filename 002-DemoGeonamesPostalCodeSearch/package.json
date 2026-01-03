@@ -1,0 +1,14 @@
+{
+  "name": "DemoGeonamesPostalCodeSearch",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.mjs",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "private": true,
+  "dependencies": {
+    "express": "^5.2.1",
+    "pg": "^8.16.3"
+  }
+}
