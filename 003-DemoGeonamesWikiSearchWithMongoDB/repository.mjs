@@ -11,12 +11,19 @@ export const dataFromMongoDB = async (query) => {
         client = await connect();
         const db = client.db("wikiGeonamesDB");
         const collection = db.collection("wiki");
-        return await collection.find({query: {$regex: query, $options: 'i'}}).toArray();
+        query = query.toLowerCase();
+        const data =  await collection.find({query}).toArray();
+
+        if (data.length !== 0) {
+            const queryCount = data[0].queryCount + 1;
+            await collection.updateOne({query}, {$set: {lastQueryDateTime: new Date(), queryCount: queryCount}});
+        }
+
+        return data;
     }
     finally {
         if (client) await client.close();
     }
-
 }
 
 export const save = async (query, data) => {
@@ -27,8 +34,10 @@ export const save = async (query, data) => {
         console.log("Connected to MongoDB");
         const db = client.db("wikiGeonamesDB");
         const collection = db.collection("wiki");
-        const newData = {data, query};
-        const id = await collection.insertOne(newData);
+        data.query = query;
+        data.lastQueryDateTime = new Date();
+        data.queryCount = 1;
+        const id = await collection.insertOne(data);
 
         console.log("Data inserted with id:", id.insertedId);
     }
