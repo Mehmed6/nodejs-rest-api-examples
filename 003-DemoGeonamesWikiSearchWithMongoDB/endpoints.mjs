@@ -1,26 +1,15 @@
-import {fetchWikiSearchInfo} from "./geonamesWikisearch.mjs";
-import {dataFromMongoDB, save} from "./repository.mjs";
+import {fetchData} from "./service.mjs";
 
-
-const mongoCallback = async (req, res) => {
+const geoWikiCallback = async (req, res) => {
     try {
         const query = req.query.q;
-        const fromMongoDB = await dataFromMongoDB(query);
+        const findData = await fetchData(query);
 
-        if (fromMongoDB.length !== 0) {
-             return res.json(fromMongoDB);
+        if (findData.geonames.length !== undefined) {
+             res.json(findData);
         }
-        else {
-            const result = await fetchWikiSearchInfo(query);
-
-            if (result.geonames.length > 0) {
-                res.json(result);
-                await save(query, result)
-            }
-            else
-                res.status(400).json({query, error: "No data found"});
-        }
-
+        else
+            res.status(400).json(findData);
 
     } catch (e) {
         res.status(500).json({error: e.message});
@@ -28,7 +17,7 @@ const mongoCallback = async (req, res) => {
 }
 
 export const createEndpoints = app => {
-    app.get("/api/geo/mongo", mongoCallback);
+    app.get("/api/geo/mongo", geoWikiCallback);
 }
 
 export const startService =(app, port) =>{
